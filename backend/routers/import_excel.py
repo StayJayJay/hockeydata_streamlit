@@ -1,5 +1,5 @@
 """
-Import dat z Excel souboru HOCKEY_LOGIC_PREDICTIONS.xlsx do SQLite databáze.
+Import dat z Excel souboru do SQLite databáze.
 Spuštění: python import_excel.py <cesta_k_excel>
 """
 import sys

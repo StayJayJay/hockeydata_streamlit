@@ -1,5 +1,5 @@
 """
-Replika CALC listů z Excelu — počítá odvozené statistiky z RAW dat.
+Počítá odvozené statistiky z RAW dat.
 Všechny funkce pracují přímo s DB, nevyžadují pandas.
 """
 from sqlalchemy.orm import Session
@@ -9,7 +9,7 @@ import models
 
 
 def calc_team_season_stats(db: Session, season_code: str, team_code: str, game_type: str = "RS") -> dict:
-    """Replika CALC_TEAMS_SEASON — průměrné statistiky týmu za sezónu."""
+    """Průměrné statistiky týmu za sezónu."""
     season = db.query(models.Season).filter_by(code=season_code).first()
     team = db.query(models.Team).filter_by(code=team_code).first()
     if not season or not team:
@@ -74,7 +74,7 @@ def calc_team_season_stats(db: Session, season_code: str, team_code: str, game_t
 
 
 def calc_goalie_stats(db: Session, season_code: str, goalie_name: str, game_type: str = "RS") -> dict:
-    """Replika CALC_GOALIES — SV%, GSAA, rating brankáře."""
+    """SV%, GSAA, rating brankáře."""
     season = db.query(models.Season).filter_by(code=season_code).first()
     goalie = db.query(models.Goalie).filter_by(name=goalie_name).first()
     if not season or not goalie:
@@ -95,7 +95,7 @@ def calc_goalie_stats(db: Session, season_code: str, goalie_name: str, game_type
     total_ga = sum(s.goals_against for s in stats if s.goals_against is not None)
 
     sv_pct = round(total_saves / total_shots, 4) if total_shots > 0 else None
-    league_sv = 0.9084  # průměr ligy z CALC_GOALIES_FORM
+    league_sv = total_saves/total_shots  # průměr ligy
 
     # GSAA = Saves - (Shots * liga_prumer)
     gsaa = round(total_saves - total_shots * league_sv, 3) if total_shots > 0 else None
@@ -126,7 +126,7 @@ def calc_goalie_stats(db: Session, season_code: str, goalie_name: str, game_type
 
 
 def calc_team_form(db: Session, team_code: str, season_code: str, last_n: int = 5) -> dict:
-    """Replika CALC_FORM — forma týmu za posledních N zápasů."""
+    """forma týmu za posledních N zápasů."""
     season = db.query(models.Season).filter_by(code=season_code).first()
     team = db.query(models.Team).filter_by(code=team_code).first()
     if not season or not team:
@@ -172,7 +172,7 @@ def calc_match_prediction_input(
     game_type: str = "RS",
 ) -> dict:
     """
-    Připraví vstupy pro predikci — replika PREDIKCE_ZAPASU.
+    Připraví vstupy pro predikci
     Vrací hodnoty připravené pro logistický model.
     """
     home_stats = calc_team_season_stats(db, season_code, home_team_code, game_type)

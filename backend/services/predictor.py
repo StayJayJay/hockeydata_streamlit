@@ -1,6 +1,5 @@
 """
 Predikční model — logistická regrese s parametry z Minitab uloženými v DB.
-Replika PREDIKCE_ZAPASU listu.
 """
 import math
 from sqlalchemy.orm import Session
