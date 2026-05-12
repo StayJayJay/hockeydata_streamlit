@@ -6,8 +6,8 @@ import sys
 import os
 import pandas as pd
 from datetime import date
-
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "../backend"))
+import re
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from database import SessionLocal, engine
 import models
@@ -25,6 +25,23 @@ def get_or_create(db, model, defaults=None, **kwargs):
     db.flush()
     return instance, True
 
+def parse_round(val):
+    """Vrátí int pro '12' nebo vytáhne číslo z 'Čtvrť-G1'. Jinak None."""
+    if pd.isna(val):
+        return None
+    s = str(val).strip()
+    # čistě číslo
+    if s.isdigit():
+        return int(s)
+    # playoff formát: něco jako "...-G1" / "G1"
+    m = re.search(r'G\s*(\d+)', s, flags=re.IGNORECASE)
+    if m:
+        return int(m.group(1))
+    # fallback: zkus poslední číslo v řetězci (kdyby bylo "Round 3")
+    m2 = re.search(r'(\d+)\s*$', s)
+    if m2:
+        return int(m2.group(1))
+    return None
 
 def import_excel(filepath: str):
     db = SessionLocal()
@@ -106,7 +123,7 @@ def import_excel(filepath: str):
         game, created = get_or_create(db, models.Game,
             defaults={
                 "season_id": season.id,
-                "round": int(home_row["Kolo/Zapas"]) if pd.notna(home_row["Kolo/Zapas"]) else None,
+                "round": parse_round(home_row.get("Kolo/Zapas")),
                 "game_type": game_type,
                 "goals_home": int(home_row["Goals_For"]) if pd.notna(home_row["Goals_For"]) else None,
                 "goals_away": int(home_row["Goals_Against"]) if pd.notna(home_row["Goals_Against"]) else None,
