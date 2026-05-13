@@ -273,7 +273,7 @@ td.muted { color: var(--text-2); }
 .dot-OTW { background: var(--ot); }
 .dot-OTL { background: var(--ot); opacity: 0.5; }
 .dot-L   { background: var(--danger); }
-.dot-?   { background: var(--text-3); }
+
 
 /* === BUTTONS === */
 .btn {
