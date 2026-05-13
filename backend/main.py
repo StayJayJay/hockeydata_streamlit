@@ -1,16 +1,28 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from database import engine
 import models
-from routers import games, teams, predictions
+from routers import games, teams, predictions, scraper
+from services.scheduler import scheduler
 
 models.Base.metadata.create_all(bind=engine)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Spustí scheduler při startu serveru
+    scheduler.start()
+    yield
+    scheduler.stop()
+
 
 app = FastAPI(
     title="Hockey Analytics API",
     description="Databáze a predikce zápasů České extraligy",
     version="1.0.0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -24,6 +36,7 @@ app.add_middleware(
 app.include_router(games.router)
 app.include_router(teams.router)
 app.include_router(predictions.router)
+app.include_router(scraper.router)
 
 
 @app.get("/")
